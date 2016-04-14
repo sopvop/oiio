@@ -506,6 +506,21 @@ public:
 };
 
 
+// ColorProcessor that does nothing
+class ColorProcessor_pass_through : public ColorProcessor {
+public:
+    ColorProcessor_pass_through () : ColorProcessor() { };
+    ~ColorProcessor_pass_through () { };
+
+    virtual void apply (float *data, int width, int height, int channels,
+                        stride_t chanstride, stride_t xstride,
+                        stride_t ystride) const
+    {
+        // just do nothing
+    }
+};
+
+
 
 ColorProcessor*
 ColorConfig::createColorProcessor (string_view inputColorSpace,
@@ -573,6 +588,11 @@ ColorConfig::createColorProcessor (string_view inputColorSpace,
         (iequals(outputColorSpace,"linear") || iequals(outputrole,"linear"))) {
         // No OCIO, or the OCIO config doesn't know linear->sRGB
         return new ColorProcessor_Rec709_to_linear;
+    }
+    if (iequals(inputColorSpace, outputColorSpace))
+    {
+        // Color spaces are equal, and nothing found by OCIO
+        return new ColorProcessor_pass_through;
     }
 
 #ifdef USE_OCIO
